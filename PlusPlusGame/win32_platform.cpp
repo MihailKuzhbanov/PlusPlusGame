@@ -1,16 +1,17 @@
-#include <Windows.h>
+#include "Renderer.hpp"
+#include "PlatformCommon.hpp"
+#include "Game.hpp"
 
-bool running(true);
+#define processButton(b, vk)\
+case vk:\
+{\
+	input.buttons[b].isDown = isDown;\
+	input.buttons[b].changed = true;\
+} break;
 
-struct RenderState
-{
-	int height, width;
-	void * memory;
-
-	BITMAPINFO bitmapInfo;
-};
-
-RenderState renderState;
+global bool running(true);
+global RenderState renderState;
+global float deltaTime = 0.016666f;
 
 
 LRESULT CALLBACK windowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -31,7 +32,7 @@ LRESULT CALLBACK windowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		renderState.width = rect.right - rect.left;
 		renderState.height = rect.bottom - rect.top;
 
-		int bufferSize = renderState.width * renderState.height * sizeof(unsigned int);
+		int bufferSize = renderState.width * renderState.height * sizeof(u32);
 
 		if (renderState.memory) VirtualFree(renderState.memory, 0, MEM_RELEASE);
 
@@ -63,26 +64,58 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 	HWND window = CreateWindow(windowClass.lpszClassName, "PlusPlusGame", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, 0, 0, hInstance, 0);
 	HDC hdc = GetDC(window);
+	Input input = {};
+	LARGE_INTEGER frameBeginTime;
+	QueryPerformanceCounter(&frameBeginTime);
+
+	float perfomanceFrequency;
+	{
+		LARGE_INTEGER perf;
+		QueryPerformanceFrequency(&perf);
+		perfomanceFrequency = (float)perf.QuadPart;
+	}
 
 	while (running)
 	{
 		MSG message;
+
+		for (int i = 0; i < BUTTON_COUNT; i++)
+		{
+			input.buttons[i].changed = false;
+		}
 		while (PeekMessage(&message, window, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage(&message);
-			DispatchMessage(&message);
-		}
-
-		unsigned int * pixel = (unsigned int*)renderState.memory;
-		for (int y = 0; y < renderState.height; y++)
-		{
-			for (int x = 0; x < renderState.width; x++)
+			switch (message.message)
 			{
-				*pixel++ = 0xff2277*rand();
+			case WM_KEYUP:
+			case WM_KEYDOWN:
+			{
+				u32 vkCode = (u32)message.wParam;
+				bool isDown = ((message.lParam & (1 << 31)) == 0);
+				switch (vkCode)
+				{
+					processButton(BUTTON_UP, VK_UP);
+					processButton(BUTTON_DOWN, VK_DOWN);
+					processButton(BUTTON_LEFT, VK_LEFT);
+					processButton(BUTTON_RIGHT, VK_RIGHT);
+				}
+			} break;
+
+			default:
+			{
+				TranslateMessage(&message);
+				DispatchMessage(&message);
+			}
 			}
 		}
 
+		Simulate(&input, renderState, deltaTime);
 		StretchDIBits(hdc, 0, 0, renderState.width, renderState.height, 0, 0, renderState.width, renderState.height, renderState.memory, &renderState.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+
+		LARGE_INTEGER frameEndTime;
+		QueryPerformanceCounter(&frameEndTime);
+		deltaTime = (float)(frameEndTime.QuadPart - frameBeginTime.QuadPart) / perfomanceFrequency;
+		frameBeginTime = frameEndTime;
 
 	}
 }
