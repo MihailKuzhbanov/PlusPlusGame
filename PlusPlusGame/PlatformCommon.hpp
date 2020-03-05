@@ -5,7 +5,7 @@ struct ButtonState
 	bool changed;
 };
 
-enum {BUTTON_UP, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_COUNT};
+enum {BUTTON_UP, BUTTON_DOWN, BUTTON_W, BUTTON_S, BUTTON_COUNT};
 
 struct Input
 {

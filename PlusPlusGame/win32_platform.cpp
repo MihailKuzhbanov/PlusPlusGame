@@ -5,8 +5,8 @@
 #define processButton(b, vk)\
 case vk:\
 {\
+	input.buttons[b].changed = isDown != input.buttons[b].isDown;\
 	input.buttons[b].isDown = isDown;\
-	input.buttons[b].changed = true;\
 } break;
 
 global bool running(true);
@@ -96,8 +96,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 				{
 					processButton(BUTTON_UP, VK_UP);
 					processButton(BUTTON_DOWN, VK_DOWN);
-					processButton(BUTTON_LEFT, VK_LEFT);
-					processButton(BUTTON_RIGHT, VK_RIGHT);
+					processButton(BUTTON_W, 'W');
+					processButton(BUTTON_S, 'S');
 				}
 			} break;
 

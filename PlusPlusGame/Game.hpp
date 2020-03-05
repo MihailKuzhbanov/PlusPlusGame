@@ -8,21 +8,27 @@
 #define pressed(b) (input->buttons[b].isDown && input->buttons[b].changed)
 #define released(b) (!input->buttons[b].isDown && input->buttons[b].changed)
 
-global float playerPosX = 0.f;
-global float playerPosY = 0.f;
-global float speed = 50.f;
+global float playerOnePosY = 50.f;
+global float playerTwoPosY = 50.f;
+global float playerOnePosX = 5.f;
+global float playerTwoPosX = 95.f;
+global float arenaHalfSizeX = 48, arenaHalfSizeY = 48;
+float playerSpeed = 50.f;
 
 internal void
 Simulate(Input *input, RenderState renderState, float deltaTime)
 {
-	ClearScreen(renderState, 0xBBAA11);
-	RenderBackground(renderState, 0xAA00AA);
+	ClearScreen(renderState, 0x000000);
+	RenderBackground(renderState, 0xAAFFAA);
+	DrawFilledRect(renderState, 50, 50, arenaHalfSizeX, arenaHalfSizeY, 0x000000);							//Arena
+	DrawFilledRect(renderState, 50, 50, 0.5, 1, 0xAAFFAA);							//Target
 
-	if (isDown(BUTTON_UP)) playerPosY += speed*deltaTime;
-	if (isDown(BUTTON_DOWN)) playerPosY -= speed * deltaTime;
-	if (isDown(BUTTON_RIGHT)) playerPosX += speed * deltaTime;
-	if (isDown(BUTTON_LEFT)) playerPosX -= speed * deltaTime;
+	if (isDown(BUTTON_W)) playerOnePosY += playerSpeed * deltaTime;
+	if (isDown(BUTTON_S)) playerOnePosY -= playerSpeed * deltaTime;
+	if (isDown(BUTTON_UP)) playerTwoPosY += playerSpeed * deltaTime;
+	if (isDown(BUTTON_DOWN)) playerTwoPosY -= playerSpeed * deltaTime;
 
-	DrawFilledRect(renderState, playerPosX, playerPosY, 5, 5, 0x00AAAA);
 
+	DrawFilledRect(renderState, playerOnePosX, playerOnePosY, 1, 10, 0xFFAA00);		//Player One
+	DrawFilledRect(renderState, playerTwoPosX, playerTwoPosY, 1, 10, 0x00AAFF);		//Player Two
 }
